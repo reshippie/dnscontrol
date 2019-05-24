@@ -103,8 +103,14 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 
 	var client *acme.Client
 
+	if cfg.MustStaple {
+		staple = cfg.MustStaple
+	} else {
+		staple = true
+	}
+
 	var action = func() (*acme.CertificateResource, error) {
-		return client.ObtainCertificate(cfg.Names, true, nil, cfg.MustStaple)
+		return client.ObtainCertificate(cfg.Names, true, nil, staple)
 	}
 
 	if existing == nil {
@@ -126,7 +132,7 @@ func (c *certManager) IssueOrRenewCert(cfg *CertConfig, renewUnder int, verbose 
 		} else {
 			log.Println("Renewing cert")
 			action = func() (*acme.CertificateResource, error) {
-				return client.RenewCertificate(*existing, true, cfg.MustStaple)
+				return client.RenewCertificate(*existing, true, staple)
 			}
 		}
 	}
